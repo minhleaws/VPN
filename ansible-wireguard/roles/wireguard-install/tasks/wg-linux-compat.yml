@@ -1,0 +1,29 @@
+- name: "Copy wireguard-linux-compat-{{ patch }}.tar.gz from local to remote"
+  copy:
+    src: "wireguard-linux-compat-{{ patch }}.tar.gz"
+    dest: "{{ wg_linux_compat_compress_file }}"
+
+
+- name: Extract compress file
+  unarchive:
+    src: "{{ wg_linux_compat_compress_file }}"
+    dest: /tmp
+    remote_src: yes
+
+
+- name: Compiling kernel modules | make
+  shell: |
+    make -j$(nproc)
+  args:
+    chdir: "{{ wg_linux_compat_src_build }}"
+  register: wg_compile_make_result
+- debug: var=wg_compile_make_result
+
+
+- name: Compiling kernel modules | make install
+  shell: make install
+  args:
+    chdir: "{{ wg_linux_compat_src_build }}"
+  register: wg_compile_make_install_result
+- debug: var=wg_compile_make_install_result
+

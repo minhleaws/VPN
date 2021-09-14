@@ -1,0 +1,54 @@
+- name: Create client certificate directory
+  file:
+    path: "{{ wireguard_client_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Create a private and public key pair for the WireGuard Client -> {{ client_ip }}
+  shell: umask 077; wg genkey | tee privatekey-{{ client_ip }} | wg pubkey > publickey-{{ client_ip }}
+  args:
+    chdir: "{{ wireguard_client_dir }}"
+  register: wireguard_create_keypair
+
+- name: Get CLIENT PRIVATE key -> {{ client_ip }}
+  command: cat privatekey-{{ client_ip }}
+  args: 
+    chdir: "{{ wireguard_client_dir }}"
+  register: wireguard_client_get_privatekey
+
+- name: Get CLIENT PUBLIC key -> {{ client_ip }}
+  command: cat publickey-{{ client_ip }}
+  args: 
+    chdir: "{{ wireguard_client_dir }}"
+  register: wireguard_client_get_publickey
+
+- name: Set fact client public/private key & server public key 
+  set_fact:
+    wireguard_client_publickey: "{{ wireguard_client_get_publickey.stdout }}"
+    wireguard_client_privatekey: "{{ wireguard_client_get_privatekey.stdout }}"
+
+- name: Generate CLIENT CONFIG file
+  template:
+    src: client_vpn_template.conf.j2
+    dest: "{{ wireguard_client_dir }}/wg-{{ client_ip }}.conf"
+    mode: 0644
+    owner: root
+    group: root
+
+- name: Setup peer connection 
+  blockinfile:
+    backup: yes
+    state: present
+    dest: "{{ wireguard_server_conf_file }}"
+    marker: "# {{ client_ip }}"
+    block: |
+      [Peer]
+      PublicKey = {{ wireguard_client_publickey }}
+      AllowedIPs = {{ client_ip }}/32
+  notify:
+  - restart wireguard vpn server
+  - check status
+  - show status
+ 

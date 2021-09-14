@@ -1,0 +1,4 @@
+- import_tasks: install.yml
+
+- import_tasks: wg-linux-compat.yml
+  when: wg_modeprobe_state.failed == true

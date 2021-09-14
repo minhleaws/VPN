@@ -1,0 +1,20 @@
+- hosts: wireguard_server
+  gather_facts: no
+  become: true
+  roles:
+    #- common
+    #- wireguard-install
+    - wg-config-api
+
+  post_tasks:
+    - name: restart wireguard vpn server
+      systemd:
+        name: "wg-quick@{{ wireguard_server_listen_interface }}"
+        state: restarted
+
+    - name: check status
+      command: wg show
+      register: wg_show
+      
+    - name: show status 
+      debug: var=wg_show.stdout_lines

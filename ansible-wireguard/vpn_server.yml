@@ -1,0 +1,7 @@
+- hosts: wireguard_server
+  gather_facts: yes
+  become: true
+  roles:
+  - common
+  - wireguard-install
+  - wireguard-server

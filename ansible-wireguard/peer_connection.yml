@@ -1,0 +1,51 @@
+- hosts: wireguard_server
+  gather_facts: no
+  become: true
+  tasks:
+  - name: Setup Peer connection on Wireguard Server
+    blockinfile:
+      backup: yes
+      state: present
+      dest: "{{ wireguard_server_conf_file }}"
+      marker: "# {{ target }}"
+      block: |
+        [Peer]
+        PublicKey = {{ wireguard_client_publickey }}
+        AllowedIPs = {{ wireguard_client_listen_address }}/32
+
+  - name: Restart Wireguard Server
+    systemd:
+      name: "wg-quick@{{ wireguard_server_listen_interface }}"
+      state: restarted
+      enabled: no
+
+  - name: WireGuard Server status
+    command: wg show
+    register: wg_show
+  - debug: var=wg_show.stdout_lines
+
+
+- hosts: "{{ target }}"
+  gather_facts: no
+  become: true
+  tasks:
+  - name: Setup Peer connection on Wireguard Client
+    blockinfile:
+      backup: yes
+      state: present
+      dest: "{{ wireguard_client_conf_file }}"
+      block: |
+        [Peer]
+        PublicKey = {{ wireguard_server_publickey }}
+        AllowedIPs = {{ wireguard_allow_ips }}
+        Endpoint = {{ wireguard_server_ip }}:{{ wireguard_server_port }}
+
+  - name: Restart Wireguard Client
+    systemd:
+      name: "wg-quick@{{ wireguard_client_listen_interface }}"
+      state: restarted      
+
+  - name: WireGuard Client status
+    command: wg show
+    register: wg_show
+  - debug: var=wg_show.stdout_lines

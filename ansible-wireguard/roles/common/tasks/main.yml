@@ -1,0 +1,14 @@
+- name: OS Linux Kernel
+  debug: var=ansible_kernel
+
+ 
+- name: Install development tools
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+    state: present
+  loop:
+    - build-essential
+    - linux-headers-{{ ansible_kernel }}
+    - libelf-dev
+    - pkg-config

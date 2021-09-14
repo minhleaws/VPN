@@ -1,0 +1,14 @@
+- name: Generate key-pairs
+  include_tasks: genkey.yml
+
+- name: Generate wgConfig
+  include_tasks: wgConfig.yml
+
+- name: Config peer connection
+  include_tasks: config_peer.yml
+
+- name: Generate multiple data payload
+  include_tasks: generate_multiple_data.yml
+
+- name: Upload wgConfig
+  include_tasks: upload.yml

@@ -1,0 +1,47 @@
+- name: Install resolvconf package
+  apt:
+    name: resolvconf
+    update_cache: yes
+    state: present
+
+- name: Create a private and public key pair for the WireGuard client
+  shell: umask 077; wg genkey | tee privatekey | wg pubkey > publickey
+  args:
+    chdir: "{{ wireguard_client_conf_path }}"
+  register: wireguard_create_keypair
+
+- name: Get Wireguard client private key value
+  command: cat privatekey
+  args: 
+    chdir: "{{ wireguard_client_conf_path }}"
+  register: wireguard_client_get_privatekey
+- set_fact:
+    wireguard_client_privatekey: "{{ wireguard_client_get_privatekey.stdout }}"
+
+- name: Generate Wireguard client config file 
+  template:
+    src: wg.conf.j2
+    dest: "{{ wireguard_client_conf_file }}"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Overwrite WireGuard systemd file
+  template:
+    src: wireguard_svc.j2
+    dest: /lib/systemd/system/wg-quick@.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Enable & Start WireGuard client service
+  systemd:
+    name: "wg-quick@{{ wireguard_client_listen_interface }}"
+    state: restarted
+    daemon_reload: yes
+    enabled: no
+
+- name: WireGuard client status
+  command: wg show
+  register: wg_show
+- debug: var=wg_show.stdout_lines

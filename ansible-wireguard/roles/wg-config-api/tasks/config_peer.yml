@@ -1,0 +1,22 @@
+- name: Pre config peering -> backup wgconfig
+  shell: |
+    export SYS_DT=$(date +%F-%T | tr ':' '_')
+    cp {{ wireguard_server_conf_file }} {{ wireguard_server_conf_path }}/wg_backup.conf.$SYS_DT
+
+- name: Copy script config peering
+  copy:
+    src: peer_connection.py
+    dest: /tmp/peer_connection.py
+    mode: 0755
+
+- name: Excute script config peering
+  shell: |
+    export CIDR={{ wireguard_ip_range }}
+    export NUMBER_OF_CLIENTS={{ number_of_clients }}
+    export CLIENT_DIR={{ wireguard_client_dir }}
+    export SERVER_CONF_FILE={{ wireguard_server_conf_file }}
+    python peer_connection.py
+  args:
+    chdir: /tmp
+  register: debug_config_peer
+- debug: var=debug_config_peer

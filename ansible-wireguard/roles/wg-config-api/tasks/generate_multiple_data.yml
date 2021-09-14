@@ -1,0 +1,17 @@
+- name: Copy script generate multiples data
+  copy:
+    src: gen_multiple_data.py
+    dest: /tmp/gen_multiple_data.py
+    mode: 0755
+
+- name:  Generate CLIENT DATA JSON file -> {{ multiple_data_path }}
+  shell: |
+    export CIDR={{ wireguard_ip_range }}
+    export NUMBER_OF_CLIENTS={{ number_of_clients }}
+    export CLIENT_DIR={{ wireguard_client_dir }}
+    export JSON_FILE_PATH={{ multiple_data_path }}
+    python gen_multiple_data.py
+  args:
+    chdir: /tmp
+  register: debug_multiple_data
+- debug: var=debug_multiple_data

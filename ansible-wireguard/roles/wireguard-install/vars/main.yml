@@ -1,0 +1,4 @@
+patch: 1.0.20200520
+wg_linux_compat_compress_file: "/tmp/wireguard-linux-compat-{{ patch }}.tar.gz"
+wg_linux_compat_extract_path: "/tmp/wireguard-linux-compat-{{ patch }}"
+wg_linux_compat_src_build: "{{ wg_linux_compat_extract_path }}/src"

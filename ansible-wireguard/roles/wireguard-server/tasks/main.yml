@@ -1,0 +1,36 @@
+# Set ip forwarding on in /proc and in the sysctl file and reload if necessary
+- name: Enabled IP forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: Generate Wireguard config file 
+  template:
+    src: wg.conf.j2
+    dest: "{{ wireguard_server_conf_file }}"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Overwrite WireGuard systemd file
+  template:
+    src: wireguard_svc.j2
+    dest: /lib/systemd/system/wg-quick@.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Enable & Start WireGuard service
+  systemd:
+    name: "wg-quick@{{ wireguard_server_listen_interface }}"
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+
+- name: WireGuard status
+  command: wg show
+  register: wg_show
+- debug: var=wg_show.stdout_lines

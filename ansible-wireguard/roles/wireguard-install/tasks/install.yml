@@ -1,0 +1,25 @@
+- name: Installing Wireguard packages
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+    state: present
+  loop:
+    - wireguard-dkms
+    - wireguard-tools
+    - wireguard
+
+
+- name: Enable WireGuard kernel module
+  modprobe:
+    name: wireguard
+    state: present
+  ignore_errors: true
+  register: wg_modeprobe_state
+
+
+- name: Show WireGuard kernel module
+  block:
+    - shell: lsmod | grep wireguard
+      register: check_wg_kernel_module
+    - debug: var=check_wg_kernel_module.stdout_lines
+  when: wg_modeprobe_state.failed == false

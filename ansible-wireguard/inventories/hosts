@@ -1,0 +1,13 @@
+[wireguard_server]
+x.x.x.x
+
+
+[wireguard_client_1]
+x.x.x.x wireguard_client_listen_address=172.16.128.12
+
+[wireguard_client_x]
+x.x.x.x  wireguard_client_listen_address=172.16.128.x
+
+[wireguard_clients:children]
+wireguard_client_1
+wireguard_client_x

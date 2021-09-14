@@ -1,0 +1,15 @@
+# WireGuard server listen address 
+wireguard_server_listen_address: 172.16.0.1/16
+# WireGuard server interface
+wireguard_server_listen_interface: wg0
+# WireGuard server default config path
+wireguard_server_conf_path: /etc/wireguard
+# WireGuard server config file
+wireguard_server_conf_file: "{{ wireguard_server_conf_path }}/{{ wireguard_server_listen_interface }}.conf"
+# WireGuard server NAT Interface
+wireguard_server_nat_inf: ens4
+# WireGuard client directory
+wireguard_client_dir: "{{ wireguard_server_conf_path }}/clients"
+
+# WireGuard server private key
+wireguard_server_privatekey: QHUF6JtFfw0e11cAc0gEq9lmxDi5iL9zfZTozUqV/1s=

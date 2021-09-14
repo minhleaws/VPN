@@ -1,0 +1,20 @@
+wireguard_server_ip: x.x.x.x
+wireguard_allow_ips: 0.0.0.0/0
+wireguard_server_port: 51820
+wireguard_client_port: 51821
+wireguard_client_external_dns: 8.8.8.8
+
+# WireGuard public key
+wireguard_server_publickey: 9dBGVJK71VYT/tpJSkquJI8ZtQfGqDVGZL3iDSi2mUY=
+
+
+# WireGuard IP Range
+wireguard_ip_range: 172.16.0.0/16 # Class B
+wireguard_ip_prefix: 16
+number_of_clients: 10000
+ip_range_file: "/tmp/ip_range.txt"
+
+# wgConfig API endpoint
+API_ENDPOINT: https://x.x.x.x/upload/wg-configs
+serverId: 16
+multiple_data_path: "{{ wireguard_server_conf_path }}/multiple_data.json"

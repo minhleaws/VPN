@@ -1,0 +1,6 @@
+# WireGuard client interface
+wireguard_client_listen_interface: wg0
+# WireGuard client default config path
+wireguard_client_conf_path: /etc/wireguard
+# WireGuard client config file
+wireguard_client_conf_file: "{{ wireguard_client_conf_path }}/{{ wireguard_client_listen_interface }}.conf"

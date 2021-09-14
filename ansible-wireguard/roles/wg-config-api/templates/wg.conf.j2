@@ -1,0 +1,10 @@
+[Interface]
+Address = {{ item }}/{{ wireguard_ip_prefix }}
+ListenPort = {{ wireguard_client_port }}
+PrivateKey = {{ wireguard_client_privatekey }}
+DNS = {{ wireguard_client_external_dns }}
+
+[Peer]
+PublicKey = {{ wireguard_server_publickey }}
+AllowedIPs = {{ wireguard_allow_ips }}
+Endpoint = {{ wireguard_server_ip }}:{{ wireguard_server_port }}

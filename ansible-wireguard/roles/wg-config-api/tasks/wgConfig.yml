@@ -1,0 +1,24 @@
+- name: Copy script generate client config
+  copy:
+    src: gen_client_conf.py
+    dest: /tmp/gen_client_conf.py
+    mode: 0755
+
+- name: Generate wg client config file
+  shell: |
+    export CIDR={{ wireguard_ip_range }}
+    export CLIENT_DIR={{ wireguard_client_dir }}
+    export NUMBER_OF_CLIENTS={{ number_of_clients }}
+    export IP_PREFIX={{ wireguard_ip_prefix }}
+    export CLIENT_PORT={{ wireguard_client_port }}
+    export EXTERNAL_DNS={{ wireguard_client_external_dns }}
+    export SERVER_PUBLIC_KEY={{ wireguard_server_publickey }}
+    export ALLOW_IP={{ wireguard_allow_ips }}
+    export ENDPOINT={{ wireguard_server_ip }}
+    export SERVER_PORT={{ wireguard_server_port }}
+    export SEVER_ID={{ serverId }}
+    python gen_client_conf.py
+  args:
+    chdir: /tmp
+  register: debug_gen_conf
+- debug: var=debug_gen_conf

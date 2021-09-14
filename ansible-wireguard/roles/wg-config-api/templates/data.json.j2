@@ -1,0 +1,8 @@
+{
+    "wgConfigData":[
+        {
+            "serverId": {{ serverId }},
+            "wgConfig": "[Interface]\nAddress = {{ item }}/{{ wireguard_ip_prefix }}\nListenPort = {{ wireguard_client_port }}\nPrivateKey = {{ wireguard_client_privatekey }}\nDNS = {{ wireguard_client_external_dns }}\n[Peer]\nPublicKey = {{ wireguard_server_publickey }}\nAllowedIPs = {{ wireguard_allow_ips }}\nEndpoint = {{ wireguard_server_ip }}:{{ wireguard_server_port }}"
+        }
+    ]
+}

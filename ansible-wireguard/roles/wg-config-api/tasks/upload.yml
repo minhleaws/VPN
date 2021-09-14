@@ -1,0 +1,6 @@
+- name: Upload CLIENT WGCONFIG DATA -> {{ multiple_data_path }}
+  shell: |
+    curl -X POST -H "Content-Type: application/json" {{ API_ENDPOINT }} -d @{{ multiple_data_path }} > upload.log 2>&1
+  args:
+    chdir: "{{ wireguard_server_conf_path }}"
+

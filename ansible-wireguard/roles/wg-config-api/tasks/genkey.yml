@@ -1,0 +1,55 @@
+- name: Create client base dir if not exist.
+  file:
+    path: "{{ wireguard_client_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Install python pip
+  apt:
+    name: python-pip
+    state: present
+    update_cache: yes
+
+- name: Pip install netaddr package
+  command: pip install netaddr
+
+- name: Copy script generate IP address
+  copy:
+    src: gen_ip_address.py
+    dest: /tmp/gen_ip_address.py
+    mode: 0755
+
+- name: Excuted script generate IP address
+  shell: |
+    export CIDR={{ wireguard_ip_range }}
+    export NUMBER_OF_CLIENTS={{ number_of_clients }}
+    export IP_RANGE_FILE={{ ip_range_file }}
+    python gen_ip_address.py
+  args:
+    chdir: /tmp
+  register: generate_ip_ipaddres  
+- debug: var=generate_ip_ipaddres.stdout_lines
+
+- name: Create client subdirectory in {{ wireguard_client_dir }}
+  shell: |
+      mkdir -p `cat {{ ip_range_file }}`
+      rm -f {{ ip_range_file }}
+  args:
+    chdir: "{{ wireguard_client_dir }}"
+
+- name: Copy script generate key-pair
+  copy:
+    src: gen_key.py
+    dest: /tmp/gen_key.py
+    mode: 0755
+
+- name: Create a private and public key pair for the WireGuard Client
+  shell: |
+    export CIDR={{ wireguard_ip_range }}
+    export CLIENT_DIR={{ wireguard_client_dir }}
+    export NUMBER_OF_CLIENTS={{ number_of_clients }}
+    python gen_key.py
+  args:
+    chdir: /tmp
