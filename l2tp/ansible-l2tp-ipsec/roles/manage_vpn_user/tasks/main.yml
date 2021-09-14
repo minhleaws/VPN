@@ -1,0 +1,14 @@
+- name: Copy VPN credentials to /etc/ppp/chap-secrets
+  template:
+    src: chap-secrets.j2
+    dest: /etc/ppp/chap-secrets
+  notify:
+  - restart vpn services
+
+
+- name: Copy VPN crendentials b64encode to /etc/ipsec.d/passwd
+  template:
+    src: passwd.j2
+    dest: /etc/ipsec.d/passwd
+  notify:
+  - restart vpn services

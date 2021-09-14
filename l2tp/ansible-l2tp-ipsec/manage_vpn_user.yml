@@ -1,0 +1,6 @@
+- hosts: tag_vpn_servers
+  gather_facts: no
+  become: true
+
+  roles:
+    - manage_vpn_user

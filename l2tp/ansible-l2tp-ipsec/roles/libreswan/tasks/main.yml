@@ -1,0 +1,45 @@
+- name: Upload libreswan-{{ swan_ver }}.tar.gz
+  copy:
+    src: libreswan-{{ swan_ver }}.tar.gz
+    dest: /tmp
+
+
+- name: Unarchive libreswan-{{ swan_ver }}.tar.gz
+  unarchive:
+    src: /tmp/libreswan-{{ swan_ver }}.tar.gz
+    dest: /tmp
+    remote_src: yes
+
+
+- name: Upload Makefile.inc.local
+  copy:
+    src: Makefile.inc.local
+    dest: /tmp/libreswan-{{ swan_ver }}
+
+
+- name: Check VERSION_CODENAME in /etc/os-release
+  shell: |
+    if ! grep -qs 'VERSION_CODENAME=' /etc/os-release; then
+      echo "USE_DH31=false" >> Makefile.inc.local
+      echo "USE_NSS_AVA_COPY=true" >> Makefile.inc.local
+      echo "USE_NSS_IPSEC_PROFILE=false" >> Makefile.inc.local
+      echo "USE_GLIBC_KERN_FLIP_HEADERS=true" >> Makefile.inc.local
+    fi
+  args:
+    chdir: /tmp/libreswan-{{ swan_ver }} 
+
+
+- name: Check IFLA_XFRM_LINK in /usr/include/linux/if_link.h
+  shell: |
+    if ! grep -qs IFLA_XFRM_LINK /usr/include/linux/if_link.h; then
+      echo "USE_XFRM_INTERFACE_IFLA_HEADER=true" >> Makefile.inc.local
+    fi
+  args:
+    chdir: /tmp/libreswan-{{ swan_ver }} 
+
+- name: Compiling and installing Libreswan, please wait...
+  shell: |
+    set -x
+    make -j $(nproc) -s base >/dev/null && make -s install-base >/dev/null
+  args:
+    chdir: /tmp/libreswan-{{ swan_ver }} 

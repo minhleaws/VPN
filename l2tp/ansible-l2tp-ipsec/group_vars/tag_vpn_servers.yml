@@ -1,0 +1,56 @@
+## Install packages
+## roles/install_packages
+common_packages:
+- wget
+- dnsutils
+- openssl
+- iptables
+- iproute2
+- gawk
+- grep
+- sed
+- net-tools
+
+required_packages:
+- libnss3-dev
+- libnspr4-dev 
+- pkg-config
+- libpam0g-dev
+- libcap-ng-dev
+- libcap-ng-utils
+- libselinux1-dev
+- libcurl4-nss-dev
+- flex
+- bison
+- gcc
+- make
+- libnss3-tools
+- libevent-dev
+- libsystemd-dev 
+- uuid-runtime
+- ppp 
+- xl2tpd
+
+## Install & configure Libreswan
+swan_ver: 4.4
+
+## Configure L2TP/IPSEC
+L2TP_NET: 192.168.42.0/24
+L2TP_LOCAL: 192.168.42.1
+L2TP_POOL: 192.168.42.10-192.168.42.250
+XAUTH_NET: 192.168.43.0/24
+XAUTH_POOL: 192.168.43.10-192.168.43.250
+DNS_SRV: "8.8.8.8"
+VPN_IPSEC_PSK: KVtZbS8yb7qV3pL64miA
+
+## Create VPN credentials
+vpn_credentials:
+  - vpn_user_name: user1
+    vpn_password: password_user1
+
+  - vpn_user_name: user3
+    vpn_password: password_user3
+
+
+  - vpn_user_name: user5
+    vpn_password: password_user5

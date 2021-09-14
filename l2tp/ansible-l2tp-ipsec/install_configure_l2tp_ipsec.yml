@@ -1,0 +1,8 @@
+- hosts: tag_vpn_servers
+  gather_facts: yes
+  become: true
+
+  roles:
+    - install_packages    # Install common, required packages
+    - libreswan           # Install, configure libreswan
+    - config_ipsec_l2tp

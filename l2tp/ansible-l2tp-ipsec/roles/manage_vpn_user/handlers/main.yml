@@ -1,0 +1,8 @@
+- name: restart vpn services
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
+  loop:
+    - ipsec
+    - xl2tpd

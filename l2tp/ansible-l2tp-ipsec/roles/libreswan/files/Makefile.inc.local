@@ -1,0 +1,5 @@
+WERROR_CFLAGS=-w
+USE_DNSSEC=false
+USE_DH2=true
+USE_NSS_KDF=false
+FINALNSSDIR=/etc/ipsec.d

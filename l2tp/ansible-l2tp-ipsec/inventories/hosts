@@ -1,0 +1,2 @@
+[tag_vpn_servers]
+sv_x.x.x.x     ansible_host=x.x.x.x

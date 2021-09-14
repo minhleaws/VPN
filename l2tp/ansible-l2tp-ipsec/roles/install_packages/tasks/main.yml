@@ -1,0 +1,16 @@
+- name: Installing common packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+    force_apt_get: yes
+  loop: "{{ common_packages }}"
+
+
+- name: Installing required packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+    force_apt_get: yes
+  loop: "{{ required_packages }}"

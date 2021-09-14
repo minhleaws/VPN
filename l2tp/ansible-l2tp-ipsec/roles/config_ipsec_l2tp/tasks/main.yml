@@ -1,0 +1,102 @@
+- name: Get your server Public IP address # set fact ipify_public_ip
+  ipify_facts:
+    timeout: 20
+  register: public_ip
+- debug: var=public_ip
+
+
+- name: Copy IPsec config to /etc/ipsec.conf
+  template:
+    src: ipsec.conf.j2
+    dest: /etc/ipsec.conf
+
+
+- name: Copy IPsec PSK to /etc/ipsec.secrets
+  template:
+    src: ipsec.secrets.j2
+    dest: /etc/ipsec.secrets
+
+
+- name: Copy xl2tpd config to /etc/xl2tpd/xl2tpd.conf
+  template:
+    src: xl2tpd.conf.j2
+    dest: /etc/xl2tpd/xl2tpd.conf
+
+
+- name: Copy xl2tpd options to /etc/ppp/options.xl2tpd
+  template:
+    src: options.xl2tpd.j2
+    dest: /etc/ppp/options.xl2tpd
+
+
+- name: Copy VPN credentials to /etc/ppp/chap-secrets
+  template:
+    src: chap-secrets.j2
+    dest: /etc/ppp/chap-secrets
+
+
+- name: Copy VPN crendentials b64encode to /etc/ipsec.d/passwd
+  template:
+    src: passwd.j2
+    dest: /etc/ipsec.d/passwd
+
+
+- name: Updating sysctl settings to /etc/sysctl.conf
+  blockinfile:
+    path: /etc/sysctl.conf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    block: |
+      kernel.msgmnb = 65536
+      kernel.msgmax = 65536
+      net.ipv4.ip_forward = 1
+      net.ipv4.conf.all.accept_redirects = 0
+      net.ipv4.conf.all.send_redirects = 0
+      net.ipv4.conf.all.rp_filter = 0
+      net.ipv4.conf.default.accept_redirects = 0
+      net.ipv4.conf.default.send_redirects = 0
+      net.ipv4.conf.default.rp_filter = 0
+      net.ipv4.conf.{{ ansible_default_ipv4.interface }}.send_redirects = 0
+      net.ipv4.conf.{{ ansible_default_ipv4.interface }}.rp_filter = 0
+      net.core.wmem_max = 12582912
+      net.core.rmem_max = 12582912
+      net.ipv4.tcp_rmem = 10240 87380 12582912
+      net.ipv4.tcp_wmem = 10240 87380 12582912
+
+
+- name: Reload sysctl setting
+  command: sysctl -p
+
+
+- name: Backup IPTables rules to /etc/iptables.rules.bk.$(date +%F-%T | tr ':' '_')
+  shell: iptables-save > /etc/iptables.rules.bk.$(date +%F-%T | tr ':' '_')
+
+
+- name: Update IPTable rule
+  shell: |
+    iptables -I INPUT 1 -p udp --dport 1701 -m policy --dir in --pol none -j DROP
+    iptables -I INPUT 2 -m conntrack --ctstate INVALID -j DROP
+    iptables -I INPUT 3 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+    iptables -I INPUT 4 -p udp -m multiport --dports 500,4500 -j ACCEPT
+    iptables -I INPUT 5 -p udp --dport 1701 -m policy --dir in --pol ipsec -j ACCEPT
+    iptables -I INPUT 6 -p udp --dport 1701 -j DROP
+    iptables -I FORWARD 1 -m conntrack --ctstate INVALID -j DROP
+    iptables -I FORWARD 2 -i "{{ ansible_default_ipv4.interface }}" -o ppp+ -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+    iptables -I FORWARD 3 -i ppp+ -o "{{ ansible_default_ipv4.interface }}" -j ACCEPT
+    iptables -I FORWARD 4 -i ppp+ -o ppp+ -s "{{ L2TP_NET }}" -d "{{ L2TP_NET }}" -j ACCEPT
+    iptables -I FORWARD 5 -i "{{ ansible_default_ipv4.interface }}" -d "{{ XAUTH_NET }}" -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+    iptables -I FORWARD 6 -s "{{ XAUTH_NET }}" -o "{{ ansible_default_ipv4.interface }}" -j ACCEPT
+    # iptables -A FORWARD -j DROP
+    iptables -t nat -I POSTROUTING -s "{{ XAUTH_NET }}" -o "{{ ansible_default_ipv4.interface }}" -m policy --dir out --pol none -j MASQUERADE
+    iptables -t nat -I POSTROUTING -s "{{ L2TP_NET }}" -o "{{ ansible_default_ipv4.interface }}" -j MASQUERADE  
+    echo "# ANSIBLE MANAGED BLOCK" > /etc/iptables.rules
+    iptables-save >> /etc/iptables.rules
+
+
+- name: Restart services
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
+  loop:
+    - ipsec
+    - xl2tpd
